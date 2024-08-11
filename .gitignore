@@ -1,0 +1,12 @@
+# Local vscode files
+.vscode
+
+# Local terraform provider instaled
+.terraform
+
+# Local terraform state files
+*.tfstate
+*.tfstate.*
+
+# tf variable files may inlclude sensitive data
+*.tfvars
