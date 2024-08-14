@@ -1,3 +1,6 @@
+#-----------------------------------------
+# Define Terrraform Providers and Backend
+#-----------------------------------------
 terraform {
     required_providers {
         aws = {
@@ -5,9 +8,19 @@ terraform {
             version = "4.30.0"
         }
 
-        linode = {
-            source = "linode/linode"
-            version = "2.25.0"
-        }
+    }
+}
+
+#-----------------------------------------
+# Provider: AWS
+#-----------------------------------------
+provider "aws" {
+    region = "eu-west-1"
+    profile = "devops"
+    default_tags {
+    tags = {
+        environment = "dev"
+        cost_center = "devops-department"
+    }
   }
 }
