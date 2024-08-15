@@ -3,6 +3,7 @@ variable subnet_cidr_blocks {}
 variable avail_zone {}
 variable env_prefix {}
 variable my_ip {}
+variable instance_type {}
 
 resource "aws_vpc" "myapp-vpc" {
     cidr_block = var.vpc_cidr_blocks
@@ -76,4 +77,45 @@ resource "aws_security_group" "myapp-sg" {
     tags = {
         Name = "${var.env_prefix}-sg"
     }     
+}
+
+data "aws_ami" "latest-amz-image" {
+    most_recent = true
+    owners = ["amazon"]
+    filter {
+        name = "name"
+        values = ["amzn2-ami-hvm-*-x86_64-gp2"]
+    }
+    filter {
+        name = "virtualization-type"
+        values = ["hvm"]
+    }
+}
+
+output "aws_ami_id" {
+    value = data.aws_ami.latest-amz-image.id
+}
+
+resource "aws_instance" "myapp_server" {
+    ami = data.aws_ami.latest-amz-image.id
+    instance_type = var.instance_type
+    subnet_id = aws_subnet.myapp-subnet-1.id
+    vpc_security_group_ids = [aws_security_group.myapp-sg.id]
+    availability_zone = var.avail_zone
+    associate_public_ip_address = true
+    key_name = "app-server-kp"
+    #user_data = file("entry-script.sh")
+    
+    user_data = <<EOF
+                    #!/bin/bash
+                    sudo yum update -y && sudo yum install -y docker
+                    sudo systemctl enable docker
+                    sudo systemctl start docker
+                    sudo usermod -aG docker $USER
+                    docker run -p 8080:80 nginx
+                EOF
+    
+    tags = {
+        Name = "${var.env_prefix}-server"
+    }
 }
