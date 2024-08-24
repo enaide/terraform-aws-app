@@ -33,17 +33,19 @@ resource "aws_security_group" "myapp-sg" {
     }     
 }
 
-data "aws_ami" "latest-amz-image" {
+data "aws_ami" "ubuntu_22_04" {
     most_recent = true
-    owners = ["amazon"]
+    owners = ["099720109477"]  # ID del propietario de Canonical
+    
     filter {
-        name = "name"
+        name   = "name"
         values = [var.image_name]
     }
+
     filter {
-        name = "virtualization-type"
+        name   = "virtualization-type"
         values = ["hvm"]
-    }
+    } 
 }
 
 resource "aws_key_pair" "ssh-key" {
@@ -52,7 +54,7 @@ resource "aws_key_pair" "ssh-key" {
 }
 
 resource "aws_instance" "myapp_server" {
-    ami = data.aws_ami.latest-amz-image.id
+    ami = data.aws_ami.ubuntu_22_04.id
     instance_type = var.instance_type
     subnet_id = var.subnet_id
     vpc_security_group_ids = [aws_security_group.myapp-sg.id]
